@@ -10,4 +10,8 @@ edition = "2018"
 winapi = { version = "0.3.9", features = ["tlhelp32", "winnt", "memoryapi", "psapi", "handleapi", "processthreadsapi", "minwindef"] }
 chiter = "0.4.3"
 piston = "0.52.1"
+piston2d-graphics = "0.39.0"
+pistoncore-glutin_window = "0.68.0"
+piston2d-opengl_graphics = "0.77.0"
+glium = "0.29.0"
 process-memory = "0.4.0"
