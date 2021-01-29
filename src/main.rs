@@ -5,11 +5,10 @@ extern crate piston;
 extern crate process_memory;
 extern crate winapi;
 
-use glutin_window::*;
-use graphics::*;
-use graphics::glyph_cache::rusttype::GlyphCache;
-use opengl_graphics::*;
-use piston::*;
+use glutin_window::{GlutinWindow, OpenGL};
+use graphics::clear;
+use opengl_graphics::{GlGraphics, GlyphCache, TextureSettings};
+use piston::{Button, EventLoop, Events, EventSettings, MouseCursorEvent, MouseScrollEvent, PressEvent, ReleaseEvent, RenderEvent, UpdateEvent, WindowSettings};
 
 use crate::ui::Element;
 
@@ -30,7 +29,7 @@ fn main() {
 
 
     let opengl = OpenGL::V3_2;
-    let mut window: GlutinWindow = WindowSettings::new("Title", [500, 300])
+    let mut window: GlutinWindow = WindowSettings::new("Title", [800, 600])
         .exit_on_esc(true)
         .graphics_api(opengl)
         .build()
@@ -53,30 +52,53 @@ fn main() {
         y: 100.0,
         width: 200.0,
         height: 40.0,
-        text: "Button Sample".to_string(),
+        text: "Sample Button Text".to_string(),
         c: [0.05, 0.1, 0.075, 1.0],
+        function: (|_b| {
+            println!("\nbutton pressed\n");
+        })
     };
 
+    let mut mouse_pos = [0.0, 0.0];
+
     while let Some(e) = events.next(&mut window) {
+        e.mouse_cursor(|m| {
+            mouse_pos = m;
+        });
+
+        //println!("Mouse position: {} {}", mouse_pos[0], mouse_pos[1]);
+
         if let Some(render) = e.render_args() {
             gl_graphics.draw(render.viewport(), |c, gl| {
                 clear([0.2, 0.3, 0.4, 1.0], gl);
 
-                b.draw(c, gl, glyph_cache);
+                b.draw(c, gl, glyph_cache, mouse_pos[0], mouse_pos[1]);
             });
         }
 
         if let Some(_update) = e.update_args() {
             b.update();
             system.refresh_all();
-            println!("refreshed system");
         }
         //TODO: find mouse pos
-        if let Some(_press) = e.press_args() {
-            b.pressed(0.0,0.0);
+        if let Some(press) = e.press_args() {
+            match press {
+                Button::Keyboard(key) => println!("Pressed keyboard key '{:?}'", key),
+                Button::Mouse(button) => {
+                    println!("Pressed mouse button '{:?}'", button);
+                    if b.is_hovered(mouse_pos[0], mouse_pos[1]) {
+                        b.action();
+                    }
+                }
+                _ => {}
+            }
         }
-        if let Some(_release) = e.release_args() {
-            b.released(0.0,0.0);
+        if let Some(release) = e.release_args() {
+            match release {
+                Button::Keyboard(key) => println!("Released keyboard key '{:?}'", key),
+                Button::Mouse(button) => println!("Released mouse button '{:?}'", button),
+                _ => {}
+            }
         }
         if let Some(_scroll) = e.mouse_scroll_args() {}
     }
